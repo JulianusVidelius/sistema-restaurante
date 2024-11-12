@@ -34,3 +34,6 @@ Asegúrate de tener instalados los siguientes programas en tu sistema:
 1. Clona este repositorio en tu servidor local:
    ```bash
    git clone https://github.com/JulianusVidelius/sistema-restaurante.git
+
+# Créditos
+Hecho por Julián Vidal, Pablo Almada e Ivo Mignone.
