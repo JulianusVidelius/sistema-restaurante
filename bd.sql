@@ -1,0 +1,39 @@
+CREATE DATABASE IF NOT EXISTS registros; --Base de Datos Restaurante
+USE registros;
+
+CREATE TABLE IF NOT EXISTS login (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    contacto VARCHAR(100) NOT NULL UNIQUE,
+    usuario VARCHAR(50) NOT NULL UNIQUE,
+    contrasena VARCHAR(255) NOT NULL
+);
+USE registros;
+
+CREATE TABLE IF NOT EXISTS pedidos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    productos TEXT NOT NULL,
+    fecha_pedido DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES login(id)
+);
+CREATE TABLE admin (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario VARCHAR(255) NOT NULL UNIQUE,
+    contrasena VARCHAR(255) NOT NULL
+);
+
+ALTER TABLE pedidos ADD COLUMN estado VARCHAR(50) DEFAULT 'pendiente';
+
+CREATE TABLE IF NOT EXISTS productos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT NOT NULL,
+    precio DECIMAL(10, 2) NOT NULL,
+    imagen VARCHAR(255) NOT NULL
+);
+
+ALTER TABLE productos ADD COLUMN categoria VARCHAR(255) NOT NULL;
+
+

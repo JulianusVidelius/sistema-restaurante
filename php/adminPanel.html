@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/estilosAdminPanel.css">
+    <title>Panel de Admin</title>
+</head>
+<body>
+    <header class="d-flex justify-content-between align-items-center p-3 bg-dark text-white">
+        <div>
+            <button id="iniciarSesionAdminBtn" class="btn btn-primary" onclick="location.href='../login_admin.html'">Iniciar Sesión Admin</button>
+            <button id="cerrarSesionBtn" class="btn btn-danger" style="display:none;" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+        <div>
+            <img src="../img/comidas/logoRestaurant.png" height="150px" width="120px" alt="Logo" class="logo">
+        </div>
+        <div>
+            <button class="btn btn-info" onclick="mostrarReporte()">Ver Reporte de Pedidos</button>
+        </div>
+    </header>
+
+    <div class="container mt-5">
+        <h1 class="panel text-success">Panel de Administración</h1>
+        <input type="text" id="filtroUsuario" class="lol" placeholder="Buscar pedidos de usuario con nombre o ID" oninput="buscarUsuario()">
+        <div id="pedidos"></div>
+
+        <div id="gestionarProductos">
+            <h2>Gestión de Productos</h2>
+            <form action="agregar_producto.php" method="POST" enctype="multipart/form-data" class="my-3">
+                <h3>Agregar Producto</h3>
+                <div class="form-group">
+                    <label for="nombre">Nombre del Producto:</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="precio">Precio:</label>
+                    <input type="number" id="precio" name="precio" step="0.01" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="categoria">Categoría:</label>
+                    <select id="categoria" name="categoria" class="custom-select" required>
+                        <option value="Plato principal">Plato principal</option>
+                        <option value="Entrada">Entrada</option>
+                        <option value="Postre">Postre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="descripcion">Descripción:</label>
+                    <textarea id="descripcion" name="descripcion" class="form-control" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="imagen">Imagen del Producto:</label>
+                    <input type="file" id="imagen" name="imagen" class="form-control-file" accept="image/*" required>
+                </div>
+                <button type="submit" class="btn btn-success">Agregar Producto</button>
+            </form>
+            <div id="productosFiltrados"></div>
+        </div>
+
+        <div id="modificarProducto" class="my-3">
+            <h3>Modificar Producto</h3>
+            <div class="form-group">
+                <label for="id_producto_modificar">Seleccionar Producto:</label>
+                <select id="id_producto_modificar" class="custom-select" onchange="cargarDatosProducto()">
+                    <option value="">Selecciona un producto</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="nombre_modificar">Nombre del Producto:</label>
+                <input type="text" id="nombre_modificar" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="precio_modificar">Precio:</label>
+                <input type="number" id="precio_modificar" step="0.01" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="descripcion_modificar">Descripción:</label>
+                <textarea id="descripcion_modificar" class="form-control"></textarea>
+            </div>
+            <button onclick="guardarCambios()" class="btn btn-primary">Guardar Cambios</button>
+        </div>
+        
+        <form action="eliminar_producto.php" method="POST" class="my-3">
+            <h3>Eliminar Producto</h3>
+            <div class="form-group">
+                <label for="id_producto" class="id_producto">ID del Producto a Eliminar:</label>
+                <input type="number" id="id_producto" name="id_producto" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-danger">Eliminar Producto</button>
+        </form>
+    </div>
+
+    <div id="myModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle"></h2>
+                    <button type="button" class="close" onclick="cerrarModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <pre id="modalMessage"></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+	<script>
+
+document.querySelector('.reportes').addEventListener('click', mostrarReporte);
+
+function mostrarReporte() {
+            fetch('obtenerReporte.php')
+            .then(response => response.json())
+            .then(data => {
+                const mensaje = `
+                    Total de pedidos: ${data.total}
+                    Pedidos pendientes: ${data.pendientes}
+                    Pedidos entregados: ${data.entregados}
+                `;
+                alert(mensaje); // Muestra el reporte en un mensaje emergente
+            })
+            .catch(error => {
+                console.error('Error al obtener el reporte:', error);
+                alert('Hubo un error al obtener el reporte.');
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('verificarSesionAdmin.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.sesionIniciada) {
+                    document.getElementById('iniciarSesionAdminBtn').style.display = 'none';
+                    document.getElementById('cerrarSesionBtn').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        function buscarUsuario() {
+    const filtro = document.getElementById('filtroUsuario').value.trim();
+    if (!filtro) {
+        document.getElementById('pedidos').innerHTML = '';
+        return;
+    }
+
+    fetch(`buscarPedidos.php?query=${encodeURIComponent(filtro)}`)
+    .then(response => response.json())
+    .then(data => {
+        const pedidosDiv = document.getElementById('pedidos');
+        pedidosDiv.innerHTML = '';
+
+        if (data.error) {
+            pedidosDiv.innerHTML = `<p>${data.error}</p>`;
+            return;
+        }
+
+        if (data.pedidos.length === 0) {
+            pedidosDiv.innerHTML = '<p>Este usuario no ha realizado pedidos.</p>';
+        } else {
+            data.pedidos.forEach((pedido) => {
+                // Parsear el campo productos que está en formato JSON
+                const productos = JSON.parse(pedido.productos);
+                const productosList = productos.map(prod => `<li>${prod.nombre} - Precio: $${prod.precio}</li>`).join('');
+
+                const pedidoDiv = document.createElement('div');
+                pedidoDiv.innerHTML = `
+                    <p style="color: white;">Usuario: ${pedido.usuario}</p>
+                    <p style="color: white;">Pedido ${pedido.id}:</p>
+                    <ul style="color: white;">${productosList}</ul>
+                    <button onclick="eliminarPedido(${pedido.id})">Eliminar</button>
+                    <button onclick="marcarEntregado(${pedido.id})">Marcar como Entregado</button>
+                    <button onclick="editarPedido(${pedido.id})">Editar Pedido</button>
+                `;
+                pedidosDiv.appendChild(pedidoDiv);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+        
+    document.addEventListener('DOMContentLoaded', function() {
+        cargarProductos();
+    });
+
+    function cargarProductos() {
+            fetch('listarProductos.php')
+            .then(response => response.json())
+            .then(data => {
+                window.productos = data.productos;  // Guardar productos para uso en filtrado
+                mostrarProductos(productos);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function filtrarProductos() {
+            const categoriaSeleccionada = document.getElementById('filtroCategoria').value;
+            const productosFiltrados = categoriaSeleccionada
+                ? productos.filter(producto => producto.categoria === categoriaSeleccionada)
+                : productos;
+            mostrarProductos(productosFiltrados);
+        }
+
+        function mostrarProductos(productos) {
+            const productosDiv = document.getElementById('productosFiltrados');
+            productosDiv.innerHTML = '';
+
+            if (productos.length === 0) {
+                productosDiv.innerHTML = '<p>No hay productos en esta categoría.</p>';
+                return;
+            }
+
+            productos.forEach(producto => {
+                const productoDiv = document.createElement('div');
+                productoDiv.classList.add('producto');
+                productoDiv.innerHTML = `
+                    <h3>${producto.nombre}</h3>
+                    <p>Precio: $${producto.precio}</p>
+                    <p>Categoría: ${producto.categoria}</p>
+                    <button onclick="editarProducto(${producto.id})">Editar</button>
+                    <button onclick="eliminarProducto(${producto.id})">Eliminar</button>
+                `;
+                productosDiv.appendChild(productoDiv);
+            });
+        }
+
+        function eliminarPedido(id) {
+            fetch('adminEliminarPedido.php?id=' + id)
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                buscarUsuario();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function marcarEntregado(id) {
+            fetch('adminMarcarEntregado.php?id=' + id)
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                buscarUsuario();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function editarPedido(id) {
+            const nuevosDatos = prompt('Introduce los nuevos datos del pedido en formato JSON ({"productos": [...]})');
+            if (!nuevosDatos) return;
+
+            fetch(`adminEditarPedido.php?id=${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: nuevosDatos
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                buscarUsuario();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function cerrarSesion() {
+            fetch('cerrarSesion.php')
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                location.href = '../login_admin.html';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

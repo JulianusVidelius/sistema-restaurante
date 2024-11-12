@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/estilosCarrito.css">
+    <title>Listado de Productos</title>
+</head>
+<body>
+    <header>
+        <div class="left">
+            <button id="sessionBtn" onclick="handleSession()"></button>
+        </div>
+        <div class="center">
+            <img src="../img/comidas/logoRestaurant.png" height="150px" width="120px" alt="Logo" class="logo">
+        </div>
+        <div class="right">
+            <div class="cart-container">
+                <img src="../img/shopping-cart-free inv-png.png" alt="Carrito" class="icon" width="85px" height="85px" onclick="verCarrito()">
+                <span id="cartCount" class="cart-counter">0</span> <!-- Contador -->
+            </div>
+            <img src="../img/avatar inv.png" alt="Perfil" class="perfil-icon" width="85px" height="85px" onclick="verPerfil()">
+        </div>        
+    </header>
+    
+    <h1>Listado de Productos</h1>
+
+    <label for="categoriaSelect">Filtrar por categoría:</label>
+    <select id="categoriaSelect" onchange="filtrarPorCategoria()">
+        <option value="todos">Todos</option>
+        <option value="Plato principal">Plato principal</option>
+        <option value="Entrada">Entrada</option>
+        <option value="Postre">Postre</option>
+    </select>
+
+    <div id="productos" class="product-grid">
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('cargar_productos.php')
+                .then(response => response.json())
+                .then(productos => {
+                    const productosDiv = document.getElementById('productos');
+                    productosDiv.innerHTML = '';
+    
+                    productos.forEach(producto => {
+                        const productoCard = document.createElement('div');
+                        productoCard.classList.add('product-card');
+                        productoCard.innerHTML = `
+                            <img src="../img/${producto.imagen}" alt="${producto.nombre}" height="100px" width="100px">
+                            <div class="product-info">
+                                <h3>${producto.nombre}</h3>
+                                <p class="price">$${producto.precio}</p>
+                                <button onclick="agregarAlCarrito('${producto.nombre}', ${producto.precio})">Agregar al carrito</button>
+                            </div>
+                        `;
+                        productosDiv.appendChild(productoCard);
+                    });
+                });
+        });
+    </script>    
+
+    <div id="carritoModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarCarrito()">&times;</span>
+            <h2>Tu Carrito</h2>
+            <div id="listaCarrito"></div>
+            <h3 id="totalCarrito">Total: $0.00</h3>
+            <button onclick="vaciarCarrito()">Vaciar Carrito</button>
+            <button onclick="finalizarPedido()">Finalizar Pedido</button>
+        </div>
+    </div>
+    <script>
+
+let productos = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Carga los productos al cargar la página
+    fetch('cargar_productos.php')
+        .then(response => response.json())
+        .then(data => {
+            productos = data;
+            mostrarProductos(productos); // Muestra todos los productos inicialmente
+        });
+});
+
+function mostrarProductos(listaProductos) {
+    const productosDiv = document.getElementById('productos');
+    productosDiv.innerHTML = ''; // Limpia los productos anteriores
+
+    listaProductos.forEach(producto => {
+        const productoCard = document.createElement('div');
+        productoCard.classList.add('product-card');
+        productoCard.innerHTML = `
+            <img src="../img/${producto.imagen}" alt="${producto.nombre}" height="100px" width="100px">
+            <div class="product-info">
+                <h3>${producto.nombre}</h3>
+                <p class="price">$${producto.precio}</p>
+                <button onclick="agregarAlCarrito('${producto.nombre}', ${producto.precio})">Agregar al carrito</button>
+            </div>
+        `;
+        productosDiv.appendChild(productoCard);
+    });
+}
+
+function filtrarPorCategoria() {
+    const categoriaSeleccionada = document.getElementById('categoriaSelect').value;
+    let productosFiltrados;
+
+    if (categoriaSeleccionada === "todos") {
+        productosFiltrados = productos; // Muestra todos los productos
+    } else {
+        productosFiltrados = productos.filter(producto => producto.categoria === categoriaSeleccionada);
+    }
+
+    mostrarProductos(productosFiltrados); // Muestra los productos filtrados
+}
+
+        let carrito = [];
+
+        function agregarAlCarrito(nombre, precio) {
+            carrito.push({ nombre, precio });
+            actualizarTotalCarrito();
+            actualizarContadorCarrito();
+        }
+
+        function actualizarContadorCarrito() {
+            const cartCount = document.getElementById('cartCount');
+            cartCount.innerText = carrito.length;
+        }
+
+        function verCarrito() {
+            const listaCarrito = document.getElementById('listaCarrito');
+            listaCarrito.innerHTML = '';
+
+            if (carrito.length === 0) {
+                listaCarrito.innerHTML = '<p>El carrito está vacío.</p>';
+            } else {
+                carrito.forEach((item, index) => {
+                    const productoDiv = document.createElement('div');
+                    productoDiv.innerHTML = `
+                        <p>${item.nombre} - $${item.precio.toFixed(2)}</p>
+                        <button onclick="eliminarDelCarrito(${index})">Eliminar</button>
+                    `;
+                    listaCarrito.appendChild(productoDiv);
+                });
+            }
+
+            document.getElementById('carritoModal').style.display = 'block';
+            actualizarTotalCarrito();
+        }
+
+        function actualizarTotalCarrito() {
+            const total = carrito.reduce((acc, item) => acc + item.precio, 0);
+            document.getElementById('totalCarrito').innerText = `Total: $${total.toFixed(2)}`;
+        }
+
+        function cerrarCarrito() {
+            document.getElementById('carritoModal').style.display = 'none';
+        }
+
+        function eliminarDelCarrito(index) {
+            carrito.splice(index, 1);
+            verCarrito();
+            actualizarContadorCarrito();
+        }
+
+        function vaciarCarrito() {
+            carrito = [];
+            verCarrito();
+            actualizarContadorCarrito();
+        }
+
+        function finalizarPedido() {
+            if (carrito.length === 0) {
+                alert('Tu carrito está vacío.');
+                return;
+            }
+
+            const productos = JSON.stringify(carrito);
+
+            fetch('guardarPedido.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'productos=' + encodeURIComponent(productos)
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                carrito = [];
+                cerrarCarrito();
+                actualizarContadorCarrito();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function verPerfil() {
+            fetch('verificarSesion.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.sesionIniciada) {
+                    window.location.href = '../perfilUsuario.html';
+                } else {
+                    alert('No has iniciado sesión. Por favor inicia sesión o regístrate.');
+                    window.location.href = '../login.html';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function handleSession() {
+            fetch('verificarSesion.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.sesionIniciada) {
+                    cerrarSesion();
+                } else {
+                    window.location.href = '../login.html';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function cerrarSesion() {
+            fetch('cerrarSesion.php')
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                document.getElementById('sessionBtn').innerText = 'Iniciar Sesión';
+                document.getElementById('sessionBtn').style.backgroundColor = '#28a745';
+                window.location.href = 'listarProductos.html';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('verificarSesion.php')
+            .then(response => response.json())
+            .then(data => {
+                const sessionBtn = document.getElementById('sessionBtn');
+                if (data.sesionIniciada) {
+                    sessionBtn.innerText = 'Cerrar Sesión';
+                    sessionBtn.style.backgroundColor = '#dc3545';
+                } else {
+                    sessionBtn.innerText = 'Iniciar Sesión';
+                    sessionBtn.style.backgroundColor = '#28a745';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Sobre Nosotros</h3>
+                <p>Somos una tienda dedicada a ofrecer los mejores electrodomésticos del mercado con un servicio de alta calidad.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Enlaces Rápidos</h3>
+                <ul>
+                    <li><a href="#">Inicio</a></li>
+                    <li><a href="#">Productos</a></li>
+                    <li><a href="#">Ofertas</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <p><strong>Teléfono:</strong> +123 456 789</p>
+                <p><strong>Email:</strong> infoelectrocompra@gmail.com</p>
+                <p><strong>Dirección:</strong> Ing. Marconi 745, Avellaneda</p>
+            </div>
+            <div class="footer-section">
+                <h3>Síguenos</h3>
+                <div class="social-icons">
+                    <a href="#"><img src="../img/facebook-icon.png" alt="Facebook"></a>
+                    <a href="#"><img src="../img/instagram-icon.png" alt="Instagram"></a>
+                    <a href="#"><img src="../img/x-logo.png" alt="Twitter"></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

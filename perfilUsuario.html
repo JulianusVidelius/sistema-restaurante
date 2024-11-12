@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/estilosPerfilUsuario.css">
+    <title class="titulo">Perfil de Usuario</title>
+</head>
+<body>
+    <header>
+        <div class="left">
+            <button id="registrarseBtn" onclick="location.href='index.html'">Registrarse</button>
+            <button id="iniciarSesionBtn" onclick="location.href='login.html'">Iniciar Sesión</button>
+        </div>
+        <div class="center">
+            <button onclick="location.href='php/listarProductos.html'">Volver a Inicio</button>
+        </div>
+    </header>
+
+    <h1>Perfil de Usuario</h1>
+
+    <div id="nombreUsuario"></div> <!-- Sección para mostrar el nombre del usuario -->
+    
+    <div id="infoPerfil"></div>
+    
+    <button onclick="cerrarSesion()">Cerrar Sesión</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('php/perfilUsuario.php')
+            .then(response => response.json())
+            .then(data => {
+                const infoPerfil = document.getElementById('infoPerfil');
+                infoPerfil.innerHTML = '';
+
+                if (data.error) {
+                    infoPerfil.innerHTML = '<p>' + data.error + '</p>';
+                    return;
+                }
+
+                // Mostrar el nombre del usuario
+                document.getElementById('nombreUsuario').innerHTML = '<h2>Bienvenido, ' + data.nombre_usuario + '!</h2>';
+
+                if (data.pedidos.length === 0) {
+                    infoPerfil.innerHTML = '<p>No hay pedidos en el historial.</p>';
+                } else {
+                    data.pedidos.forEach((pedido, index) => {
+                        const pedidoDiv = document.createElement('div');
+                        pedidoDiv.classList.add('order-card');
+
+                        const productos = JSON.parse(pedido.productos);
+
+                        let productosHTML = '<ul>';
+                        productos.forEach(producto => {
+                            productosHTML += `<li>${producto.nombre} - $${producto.precio}</li>`;
+                        });
+                        productosHTML += '</ul>';
+
+                        pedidoDiv.innerHTML = `
+                            <h3>Pedido ${index + 1} (ID: ${pedido.id})</h3>
+                            <p>Productos:</p>
+                            ${productosHTML}
+                            <button class="eliminar-btn" onclick="eliminarPedido(${pedido.id})">Eliminar Pedido</button>
+                        `;
+                        infoPerfil.appendChild(pedidoDiv);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+            // Verificación de sesión
+            fetch('php/verificarSesion.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.sesionIniciada) {
+                    document.getElementById('registrarseBtn').style.display = 'none';
+                    document.getElementById('iniciarSesionBtn').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        function cerrarSesion() {
+            fetch('php/cerrarSesion.php')
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                location.href = 'php/listarProductos.html';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function eliminarPedido(id) {
+            fetch('php/eliminarPedido.php?id=' + id)
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

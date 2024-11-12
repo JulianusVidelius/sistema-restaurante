@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/formStyles.css">
+    <title>Registro de Usuarios</title>
+</head>
+<body>
+        <div class="login-container">
+            <div class="login-avatar">
+                <img src="img/avatar.png" alt="Avatar">
+            </div>
+        <h1>Registro de Usuarios</h1>
+        <form action="php/guardarRegistro.php" method="POST">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required>
+            
+            <label for="apellidos">Apellidos:</label>
+            <input type="text" id="apellidos" name="apellidos" required>
+            
+            <label for="contacto">Correo electrónico:</label>
+            <input type="email" id="contacto" name="contacto" required>
+            
+            <label for="usuario">Nombre de Usuario:</label>
+            <input type="text" id="usuario" name="usuario" required>
+            
+            <label for="contrasena">Contraseña:</label>
+            <input type="password" id="contrasena" name="contrasena" required>
+            
+            <p>¿Ya tienes cuenta? <a href="login.html">Iniciar Sesión</p> </a>
+           
+            <button type="submit">Registrar</button>
+        </form>
+    </div>
+</body>
+</html>
