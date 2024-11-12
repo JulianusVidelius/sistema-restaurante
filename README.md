@@ -18,8 +18,8 @@ Este proyecto es un sistema de gestión para un restaurante, diseñado para faci
 ## Estructura del Proyecto
 
 - **Frontend:** Todos los archivos relacionados con la interfaz de usuario (HTML, CSS, JavaScript) se encuentran en la carpeta `public/`.
-- **Backend:** El código PHP se encuentra en la carpeta `src/`, que maneja la lógica del servidor y la conexión a la base de datos.
-- **Base de Datos:** El archivo `database.sql` contiene el esquema de la base de datos y se encuentra en la carpeta `db/`.
+- **Backend:** El código PHP se encuentra en la carpeta `php/`, que maneja la lógica del servidor y la conexión a la base de datos.
+- **Base de Datos:** El archivo `db.sql` contiene el esquema de la base de datos.
 
 ## Requisitos Previos
 
@@ -33,4 +33,4 @@ Asegúrate de tener instalados los siguientes programas en tu sistema:
 
 1. Clona este repositorio en tu servidor local:
    ```bash
-   git clone https://github.com/usuario/sistema-restaurante.git
+   git clone https://github.com/JulianusVidelius/sistema-restaurante.git
