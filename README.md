@@ -17,7 +17,7 @@ Este proyecto es un sistema de gestión para un restaurante, diseñado para faci
 
 ## Estructura del Proyecto
 
-- **Frontend:** Todos los archivos relacionados con la interfaz de usuario (HTML, CSS, JavaScript) se encuentran en la carpeta `public/`.
+- **Frontend:** Todos los archivos relacionados con la interfaz de usuario (HTML, CSS, JavaScript).
 - **Backend:** El código PHP se encuentra en la carpeta `php/`, que maneja la lógica del servidor y la conexión a la base de datos.
 - **Base de Datos:** El archivo `db.sql` contiene el esquema de la base de datos.
 
