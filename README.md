@@ -35,5 +35,5 @@ Asegúrate de tener instalados los siguientes programas en tu sistema:
    ```bash
    git clone https://github.com/JulianusVidelius/sistema-restaurante.git
 
-# Créditos
+## Créditos
 Hecho por Julián Vidal, Pablo Almada e Ivo Mignone.
